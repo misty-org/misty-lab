@@ -1,0 +1,12 @@
+{
+  "name": "@misty/lab",
+  "version": "0.1.0",
+  "description": "Misty's Lab: notebooks of sources to learn from, study tools and learning together in a Space, as a module that plugs back into Misty.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "private": true,
+  "files": [
+    "src",
+    "integration"
+  ]
+}

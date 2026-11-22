@@ -1,0 +1,757 @@
+--- a/src/features/agents/BottomBarStatus.tsx
++++ b/src/features/agents/BottomBarStatus.tsx
+@@ -35,6 +35,7 @@
+ import { setCompanionOn, useCompanionOn } from "./tutor/cursor/companionOn";
+ import { useCompanionState } from "./tutor/cursor/companionState";
+ import { useLessonStore } from "./tutor/lessons/lessonStore";
++import { tutorChatIds, useTutorStore } from "./tutor/tutorStore";
+ 
+ type OpenChat = (agentId: string, conversationId: string) => void;
+ type FocusedChat = { conversationId: string };
+@@ -125,14 +126,17 @@
+ export function UnreadStatus({ onOpenChat }: { onOpenChat: OpenChat }) {
+   const conversations = useMistyStore((state) => state.conversations);
+   const lessons = useLessonStore((state) => state.lessons);
++  const jobs = useTutorStore((state) => state.jobs);
++  const notebooks = useTutorStore((state) => state.notebooks);
+   const unread = useMemo(() => {
++    const made = tutorChatIds(jobs, notebooks);
+     return conversations
+       .filter(
+         (chat) =>
+-          chat.messages.length > 0 && !lessons[chat.id] && isChatUnread(chat),
++          chat.messages.length > 0 && !lessons[chat.id] && !made.has(chat.id) && isChatUnread(chat),
+       )
+       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+-  }, [conversations, lessons]);
++  }, [conversations, lessons, jobs, notebooks]);
+   if (!unread.length) return null;
+   return (
+     <Button
+--- a/src/features/agents/activity/useSpaceRuns.ts
++++ b/src/features/agents/activity/useSpaceRuns.ts
+@@ -2,12 +2,20 @@
+ import { conversationInSpace } from "../conversations/state/conversationSpace";
+ import type { GlobalAiConversation } from "../conversations/state/conversationTypes";
+ import { useMistyStore } from "../conversations/state/useMistyStore";
++import { useTutorChatIds } from "../tutor/tutorStore";
+ import { activityApi, type RunRow } from "./activityApi";
+ import { useRunEvents } from "./useRunSteps";
+ 
+ function useSpaceChats(): GlobalAiConversation[] {
+   const conversations = useMistyStore((state) => state.conversations);
+-  return useMemo(() => conversations.filter((conversation) => conversationInSpace(conversation)), [conversations]);
++  const tutorChats = useTutorChatIds();
++  return useMemo(
++    () =>
++      conversations.filter(
++        (conversation) => conversationInSpace(conversation) && !tutorChats.has(conversation.id),
++      ),
++    [conversations, tutorChats],
++  );
+ }
+ 
+ export function useSpaceRuns(limit = 200): {
+--- a/src/features/agents/tutor/cursor/CursorCompanionController.tsx
++++ b/src/features/agents/tutor/cursor/CursorCompanionController.tsx
+@@ -1,10 +1,12 @@
+ import { useEffect } from "react";
+ import { followLessons } from "../lessons/lessonSync";
++import { followTutorJobs } from "../tutorRuns";
+ import { companionAvailable, useCompanionOn } from "./companionOn";
+ import { startCursorCompanion } from "./cursorCompanionRuntime";
+ 
+ export function CursorCompanionController({ accountId }: { accountId: string }) {
+   useEffect(() => followLessons(accountId), [accountId]);
++  useEffect(() => followTutorJobs(accountId), [accountId]);
+   const on = useCompanionOn();
+   useEffect(() => {
+     if (on !== true || !companionAvailable()) return;
+--- a/src/app/layouts/DesktopLayout/search/useRemoteHits.tsx
++++ b/src/app/layouts/DesktopLayout/search/useRemoteHits.tsx
+@@ -1,4 +1,4 @@
+-import { FileCode, History, Plug } from "lucide-react";
++import { FileCode, FileText, History, Plug } from "lucide-react";
+ import { useEffect, useState } from "react";
+ import {
+   defaultEngineAgent,
+@@ -9,6 +9,8 @@
+   resumeInNewChat,
+   searchEngineSessions,
+   searchFolderFiles,
++  searchNotebooks,
++  notebookRoute,
+ } from "@/features/agents";
+ import { searchSpaceText, type SpaceSearchHit } from "@/features/spaces";
+ import { useSettingsStore } from "@/features/settings";
+@@ -25,12 +27,14 @@
+   spaceId,
+   words,
+   asking,
++  notebooks,
+   agents,
+   openRoute,
+ }: {
+   spaceId: string;
+   words: string;
+   asking: boolean;
++  notebooks: Record<string, { id: string; title: string }>;
+   agents: AgentProfile[];
+   openRoute(route: string): void;
+ }) {
+@@ -69,6 +73,29 @@
+         ),
+       );
+     }
++    if (Object.keys(notebooks).length)
++      sources.push(async () => {
++        const { hits } = await searchNotebooks(words, signal);
++        return hits.flatMap((hit) => {
++          const notebook = notebooks[hit.notebookId];
++          if (!notebook) return [];
++          const match = Math.max(matchScore(hit.text, words), hit.score > 0.3 ? 3 : 0);
++          if (!match) return [];
++          return [
++            {
++              id: `passage:${hit.notebookId}:${hit.itemId}`,
++              kind: "learn" as const,
++              group: "In notebooks",
++              title: hit.title || notebook.title,
++              detail: notebook.title,
++              excerpt: excerpt(hit.text, words),
++              icon: icon(FileText),
++              match,
++              open: () => openRoute(notebookRoute(notebook)),
++            },
++          ];
++        });
++      });
+     if (include.files)
+       sources.push(async () =>
+         (await searchFolderFiles((name, rel) => fieldScore(words, name, rel))).map((file) => ({
+@@ -161,7 +188,7 @@
+       window.clearTimeout(timer);
+       controller.abort();
+     };
+-    // `agents` is read when the words change; a new search follows them.
++    // `notebooks` and `agents` are read when the words change; a new search follows them.
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [remoteKey, openRoute]);
+ 
+--- a/src/app/layouts/DesktopLayout/search/searchTypes.ts
++++ b/src/app/layouts/DesktopLayout/search/searchTypes.ts
+@@ -8,7 +8,7 @@
+   { id: "all", label: "All", placeholder: "Search" },
+   { id: "chats", label: "Chats", placeholder: "Search chats" },
+   { id: "space", label: "Space", placeholder: "Search this Space" },
+-  { id: "learn", label: "Lessons", placeholder: "Search lessons" },
++  { id: "learn", label: "Lab", placeholder: "Search the Lab" },
+   { id: "apps", label: "Apps", placeholder: "Search apps" },
+   { id: "settings", label: "Settings", placeholder: "Search settings" },
+   { id: "commands", label: "Commands", placeholder: "Search commands" },
+--- a/src/features/spaces/overview/SpaceSectionView.tsx
++++ b/src/features/spaces/overview/SpaceSectionView.tsx
+@@ -17,6 +17,11 @@
+   return { default: SpaceChatEntry };
+ }
+ const Chat = lazy(loadChat);
++async function loadLab() {
++  const { SpaceLab } = await import("@/features/agents");
++  return { default: SpaceLab };
++}
++const Lab = lazy(loadLab);
+ async function loadExplore() {
+   const { ExplorePage } = await import("@/features/agents");
+   return { default: ExplorePage };
+@@ -43,6 +48,9 @@
+     case "files":
+       await loadFiles();
+       break;
++    case "lab":
++      await loadLab();
++      break;
+     case "agents":
+     case "explore":
+       await loadExplore();
+@@ -57,6 +65,7 @@
+ }
+ 
+ const sectionTabTitles: Record<string, string> = {
++  lab: "Lab",
+   explore: "Explore",
+ };
+ 
+@@ -118,6 +127,8 @@
+       <Suspense fallback={<SpacePageLoadingPlaceholder shape={shape} />}>
+         {section === "files" ? (
+           <Files />
++        ) : section === "lab" ? (
++          <Lab spaceId={spaceId} />
+         ) : section === "explore" ? (
+           <Explore
+             spaceId={spaceId}
+--- a/src/features/spaces/routes/spaceRoute.ts
++++ b/src/features/spaces/routes/spaceRoute.ts
+@@ -5,6 +5,7 @@
+   "home",
+   "social",
+   "chat",
++  "lab",
+   "explore",
+   "files",
+   "app",
+--- a/src/shared/shortcuts/registry.ts
++++ b/src/shared/shortcuts/registry.ts
+@@ -76,7 +76,7 @@
+   }),
+ ];
+ 
+-const spaceSections = ["Chat", "Files"] as const;
++const spaceSections = ["Chat", "Files", "Lab"] as const;
+ 
+ const tabAndToolCommands = [
+   ...spaceSections.map((label, index) =>
+--- a/src/features/spaces/components/SpacePageShortcuts.tsx
++++ b/src/features/spaces/components/SpacePageShortcuts.tsx
+@@ -5,7 +5,7 @@
+ import { useWorkspaceViewFocused } from "@/features/app-windows";
+ import { preloadSpaceSection } from "../overview/SpaceSectionView";
+ 
+-const shortcutPages = ["chat", "files"] as const;
++const shortcutPages = ["chat", "files", "lab"] as const;
+ 
+ export function SpacePageShortcuts({ space }: { space: Space }) {
+   const location = useLocation();
+@@ -31,6 +31,7 @@
+   const page = (index: number) => `${base}/${shortcutPages[index]}`;
+   useShortcutHandler("space.section_1", () => void openPage(page(0)), focused);
+   useShortcutHandler("space.section_2", () => void openPage(page(1)), focused);
++  useShortcutHandler("space.section_3", () => void openPage(page(2)), focused);
+ 
+   return null;
+ }
+--- a/src/features/spaces/components/SpacePageLoadingPlaceholder.tsx
++++ b/src/features/spaces/components/SpacePageLoadingPlaceholder.tsx
+@@ -1,4 +1,5 @@
+ import { ErrorState, ListRowSkeleton, PaneLoading, SetupState } from "@misty/ui";
++import { SpaceLabSkeleton } from "@/features/agents";
+ import { ConversationLoadState } from "../chat/components/ConversationStates";
+ 
+ export interface SpacePageShape {
+@@ -35,6 +36,8 @@
+           <ListRowSkeleton label="Files" rows={2} state />
+         </div>
+       );
++    case "lab":
++      return <SpaceLabSkeleton />;
+     default:
+       return <PaneLoading label="Loading page" />;
+   }
+--- a/src/features/app-windows/tabs/routeSurface.ts
++++ b/src/features/app-windows/tabs/routeSurface.ts
+@@ -80,12 +80,13 @@
+   return null;
+ }
+ 
+-type SpaceWorkspaceTool = "explore" | "social" | "files" | "space";
++type SpaceWorkspaceTool = "explore" | "social" | "files" | "lab" | "space";
+ 
+ const spaceToolTitles: Record<SpaceWorkspaceTool, string> = {
+   explore: "Explore",
+   social: "Chat",
+   files: "Files",
++  lab: "Lab",
+   space: "Space",
+ };
+ 
+@@ -116,5 +117,6 @@
+   if (section === "explore" || section === "agents") return "explore";
+   if (section === "chat" || section === "social") return "social";
+   if (section === "files" || section === "media" || section === "library") return "files";
++  if (section === "lab") return section;
+   return "space";
+ }
+--- a/src/features/onboarding/tours/tours.ts
++++ b/src/features/onboarding/tours/tours.ts
+@@ -5,6 +5,8 @@
+   | "welcome"
+   | "agents"
+   | "space"
++  | "lab"
++  | "notebook"
+   | "space-chat"
+   | "search"
+   | "layout"
+@@ -110,6 +112,59 @@
+       },
+     ],
+   },
++  lab: {
++    label: "Lab tour",
++    steps: [
++      {
++        target: "lab-start",
++        title: "What do you want to learn?",
++        body: "Type a topic or pick one, and your AI finds good sources to start a notebook.",
++      },
++      {
++        target: "lab-new",
++        title: "Your notebooks",
++        body: "Add your own files, links and notes, then ask questions. Answers show where they came from.",
++      },
++      {
++        title: "Study tools",
++        body: "Turn a notebook into a summary, a mind map, flashcards, a quiz or something to listen to.",
++      },
++      {
++        title: "Learn together",
++        body: "Share a notebook with your space. Friends can read it, add their own notes at the end and save a copy to their own lab.",
++      },
++    ],
++  },
++  notebook: {
++    label: "Notebook tour",
++    steps: [
++      {
++        target: "notebook-sources",
++        title: "Your sources",
++        body: "The files, links and notes this notebook learns from. Tick the ones you want it to use.",
++      },
++      {
++        target: "notebook-add",
++        title: "Add more",
++        body: "Add a file, a link or a note of your own.",
++      },
++      {
++        target: "notebook-ask",
++        title: "Ask about them",
++        body: "Ask a question. Answers point to where in your sources they came from.",
++      },
++      {
++        target: "notebook-create",
++        title: "Make something to study",
++        body: "Turn the notebook into a summary, a mind map, flashcards, a quiz or something to listen to.",
++      },
++      {
++        target: "notebook-share",
++        title: "Work on it together",
++        body: "Everyone in this Space can open this notebook. See who's here, talk it over, or change how it looks and behaves.",
++      },
++    ],
++  },
+   "space-chat": {
+     label: "Chat tour",
+     steps: [
+--- a/src/features/onboarding/tours/TourHost.tsx
++++ b/src/features/onboarding/tours/TourHost.tsx
+@@ -34,6 +34,9 @@
+ export function tourForPage(pathname: string, search: string): TourId | null {
+   const params = new URLSearchParams(search);
+   if (pathname === "/agents") {
++    const view = params.get("view");
++    if (view === "lab" || view === "tutor" || view === "notebooks")
++      return params.get("item")?.startsWith("notebook:") ? "notebook" : "lab";
+     return "welcome";
+   }
+   const space = /^\/spaces\/[^/]+(?:\/([^/]+)(?:\/([^/]+))?)?/.exec(pathname);
+@@ -46,6 +49,8 @@
+       case "chat":
+       case "social":
+         return "space-chat";
++      case "lab":
++        return params.get("item")?.startsWith("notebook:") ? "notebook" : "lab";
+     }
+   }
+   return null;
+--- a/src/features/agents/methods/AgentWorkspaceFrame.tsx
++++ b/src/features/agents/methods/AgentWorkspaceFrame.tsx
+@@ -6,6 +6,8 @@
+ import { useRailShown } from "../context-panel/railLayoutStore";
+ import { ChatSessionCard, ChatSidePanels } from "../context-panel/ChatSidePanels";
+ import { isUnread, markConversationRead } from "./conversationReads";
++import { LabInSpace } from "../tutor/LabInSpace";
++import { CodePage } from "../code/CodePage";
+ import { cn, Separator, Surface } from "@misty/ui";
+ import { AgentMemoryPage } from "../memory/AgentMemoryPage";
+ import { createPort } from "@/shared/lib/seams";
+@@ -34,7 +36,7 @@
+ 
+ const isRunInProgress = (state?: string) => state === "running" || state === "queued";
+ 
+-export type AgentWorkspacePage = "task" | "files" | "memory";
++export type AgentWorkspacePage = "task" | "lab" | "code" | "files" | "memory";
+ type RecentConversation = {
+   id: string;
+   title?: string;
+@@ -108,6 +110,8 @@
+             {page === "task" ? (
+               <ChatSessionCard conversationId={conversationId} agent={agent} />
+             ) : null}
++            {page === "lab" ? <LabInSpace agent={agent} /> : null}
++            {page === "code" ? <CodePage /> : null}
+             {page === "files" ? <FilesPageSlot /> : null}
+             {page === "memory" ? (
+               <AgentMemoryPage
+--- a/src/features/agents/page/useAgentsPageState.ts
++++ b/src/features/agents/page/useAgentsPageState.ts
+@@ -215,12 +215,15 @@
+ export type AgentsPageState = ReturnType<typeof useAgentsPageState>;
+ 
+ const workspacePageTitles: Record<Exclude<AgentWorkspacePage, "task">, string> = {
++  lab: "Lab",
++  code: "Code",
+   files: "Files",
+   memory: "Memory",
+ };
+ 
+ function pageFromView(view: string): AgentWorkspacePage | undefined {
+-  if (view === "files" || view === "memory") return view;
++  if (view === "tutor" || view === "notebooks") return "lab";
++  if (view === "lab" || view === "code" || view === "files" || view === "memory") return view;
+   return undefined;
+ }
+ 
+--- a/src/features/agents/index.ts
++++ b/src/features/agents/index.ts
+@@ -26,6 +26,7 @@
+ export { DirectApps } from "./connected-apps/DirectApps";
+ export { AgentAvatar, AgentMark } from "./personal/AgentAvatar";
+ export { useLessonStore } from "./tutor/lessons/lessonStore";
++export { tutorChatIds, useTutorChatIds, useTutorStore } from "./tutor/tutorStore";
+ 
+ export { BrowserContextMenuBridge } from "./conversations/context/BrowserContextMenuBridge";
+ export { MistyContextBridgeHost } from "./conversations/context/MistyContextBridgeHost";
+@@ -64,6 +65,9 @@
+ 
+ export { spaceAgentsApi, type SpaceAgent } from "./api/space-agents";
+ export { spacesGateway } from "./spaces-gateway/spacesGateway";
++export { EditorSettings } from "./code/vim/EditorSettings";
++export { CollaborationSettings } from "./code/live/CollaborationSettings";
++export { openCodeChat } from "./code/sessions/CodeChatColumn";
+ export { findVocative, routeToAgent } from "./tutor/cursor/vocativeRoute";
+ 
+ export { openMisty } from "./conversations/ask/handoff";
+@@ -119,6 +123,8 @@
+ export { PickUpDialog } from "./pickup/PickUpDialog";
+ export { pickUpRequest, pickUpTopic } from "./pickup/pickUp";
+ export { HappeningNow } from "./activity/HappeningNow";
++export { LabDoing } from "./tutor/LabDoing";
++export { SpaceLab, SpaceLabSkeleton } from "./tutor/SpaceLab";
+ export { runOnEngine } from "./engines/engineRun";
+ export { cleanupOnEngine } from "./engines/mistyCalls";
+ export { EngineSection } from "./engines/EngineSection";
+@@ -128,7 +134,9 @@
+   setDefaultEngine,
+   useDefaultEngine,
+ } from "./engines/defaultEngine";
+-export { personColor, personTone } from "@/shared/lib/personTone";
++export { notebookRoute } from "./tutor/notebookSpace";
++export { PersonAvatar } from "./tutor/notebook/LivePeople";
++export { personColor, personTone } from "./tutor/personTone";
+ export { useSpaceRuns } from "./activity/useSpaceRuns";
+ export { AgentActivitySettings } from "./activity/AgentActivitySettings";
+ 
+@@ -137,6 +145,7 @@
+ export { messageSearchText } from "./conversations/view/navigation/timelineSearch";
+ export { searchEngineSessions } from "./conversations/view/engine/engineHistory";
+ export { defaultEngineAgent } from "./engines/defaultEngine";
++export { searchNotebooks } from "./tutor/tutorSearch";
+ export { directAppsApi } from "./connected-apps/directApi";
+ export { openFolderFile, searchFolderFiles } from "./context-panel/files/folderFileSearch";
+ export { tourCorner, type AgentSurfaceTour } from "./TourCorner";
+@@ -152,6 +161,18 @@
+   TutorStatus,
+   UnreadStatus,
+ } from "./BottomBarStatus";
++export {
++  CodeBranchStatus,
++  CodeCursorStatus,
++  CodeLanguageStatus,
++  CodeLiveStatus,
++  CodeProblemsStatus,
++  CodeServerStatus,
++  CodeTerminalButton,
++  CodeThemeStatus,
++  CodeVimStatus,
++} from "./code/CodeBarStatus";
++
+ export { loadRunEntry } from "./tools/runContexts";
+ 
+ export {
+--- a/src/app/layouts/DesktopLayout/sidebarPinsStore.ts
++++ b/src/app/layouts/DesktopLayout/sidebarPinsStore.ts
+@@ -2,7 +2,7 @@
+ import { readDeviceState, updateDeviceState } from "@/features/agents";
+ import { announceDeviceSetting, onDeviceSettingChange } from "@/shared/lib/deviceSetting";
+ 
+-export const sidebarPlaceIds = ["files"] as const;
++export const sidebarPlaceIds = ["files", "lab", "code"] as const;
+ export type SidebarPlaceId = (typeof sidebarPlaceIds)[number];
+ 
+ interface SidebarPins {
+--- a/src/app/layouts/DesktopLayout/SpaceNavigator.tsx
++++ b/src/app/layouts/DesktopLayout/SpaceNavigator.tsx
+@@ -7,7 +7,10 @@
+   useChatSectionsStore,
+   useLessonStore,
+   useMistyStore,
++  tutorChatIds,
++  useTutorStore,
+   usePersonalAgentsStore,
++  useProjectChats,
+ } from "@/features/agents";
+ import { dockLeaves, useWorkspaceStore, type WorkspaceView } from "@/features/app-windows";
+ import {
+@@ -64,7 +67,7 @@
+ 
+ const ExploreIcon = spaceIcons.explore;
+ 
+-const placeLabels: Record<SidebarPlaceId, string> = { files: "Files" };
++const placeLabels: Record<SidebarPlaceId, string> = { files: "Files", lab: "Lab", code: "Code" };
+ 
+ function useFocusedRoute(): string {
+   return useWorkspaceStore((state) => {
+@@ -253,11 +256,15 @@
+   const conversationsError = useMistyStore((state) => state.conversationsError);
+   const [chatsReadFor, setChatsReadFor] = useState<string | null>(null);
+   const lessons = useLessonStore((state) => state.lessons);
++  const tutorJobs = useTutorStore((state) => state.jobs);
++  const tutorNotebooks = useTutorStore((state) => state.notebooks);
+   const route = useFocusedRoute();
+   const statuses = useChatStatuses();
++  const projectChats = useProjectChats();
+   useEffect(() => {
+     void usePersonalAgentsStore.getState().load(accountId);
+     void useLessonStore.getState().load(accountId);
++    void useTutorStore.getState().load(accountId);
+     void useChatSectionsStore
+       .getState()
+       .load(accountId)
+@@ -270,28 +277,35 @@
+       .finally(() => setChatsReadFor(accountId));
+   }, [accountId]);
+   const chatsPending =
+-    !conversations.length && (conversationsLoading || chatsReadFor !== accountId);
++    (!conversations.length && (conversationsLoading || chatsReadFor !== accountId)) ||
++    projectChats === null;
+ 
+   const chats = useMemo(() => {
++    const made = tutorChatIds(tutorJobs, tutorNotebooks);
+     return (
+       conversations
+         .filter(
+           (chat) =>
+             chat.messages.length > 0 &&
+             !chat.place &&
+-            !lessons[chat.id],
++            !projectChats?.[chat.id] &&
++            !lessons[chat.id] &&
++            !made.has(chat.id),
+         )
+         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+     );
+-  }, [conversations, lessons]);
++  }, [conversations, projectChats, lessons, tutorJobs, tutorNotebooks]);
+   const [path, query = ""] = route.split("?");
+   const params = new URLSearchParams(query);
+   const view = path === "/agents" ? params.get("view") : null;
+   const openChat = path === "/agents" && !view ? params.get("conversation") : null;
++  const base = space ? `/spaces/${encodeURIComponent(space.id)}` : "";
+   const open = (target: string) => openWorkspaceRoute(target, onOpen);
+   useEffect(() => void useSidebarPins.getState().load(), []);
+   const placeRoutes: Record<SidebarPlaceId, string> = {
+     files: "/agents?view=files",
++    lab: `${base}/lab`,
++    code: "/agents?view=code",
+   };
+   const places = Object.fromEntries(
+     (Object.keys(placeLabels) as SidebarPlaceId[]).map((id) => [
+@@ -299,7 +313,11 @@
+       {
+         label: placeLabels[id],
+         icon: spaceIcons[id],
+-        current: view === id,
++        current:
++          id === "code" || id === "files"
++            ? view === id
++            : Boolean(space) &&
++              (path === placeRoutes[id] || path.startsWith(`${placeRoutes[id]}/`)),
+         open: () => open(placeRoutes[id]),
+       } satisfies SidebarPlace,
+     ]),
+--- a/src/app/layouts/DesktopLayout/search/useSearchHits.tsx
++++ b/src/app/layouts/DesktopLayout/search/useSearchHits.tsx
+@@ -1,7 +1,10 @@
+ import {
+   Armchair,
++  CodeXml,
+   GraduationCap,
+   MessagesSquare,
++  NotebookPen,
++  FlaskConical,
+   Galaxy,
+   Plus,
+   Settings,
+@@ -15,10 +18,15 @@
+   askInNewChat,
+   messageSearchText,
+   requestChatFind,
++  tutorChatIds,
+   useLessonStore,
+   useMistyStore,
+   defaultAgentOf,
+   usePersonalAgentsStore,
++  useTutorStore,
++  notebookRoute,
++  openCodeChat,
++  useProjectChats,
+ } from "@/features/agents";
+ import { useCommands } from "@/features/commands";
+ import { openSettings, searchSettings } from "@/features/settings";
+@@ -35,6 +43,8 @@
+ const pages: { label: string; icon: LucideIcon; route(base: string): string; space?: boolean }[] = [
+   { label: "Space", icon: Galaxy, route: (base) => base, space: true },
+   { label: "Studio", icon: Armchair, route: () => "/agents?view=studio" },
++  { label: "Code", icon: CodeXml, route: () => "/agents?view=code" },
++  { label: "Lab", icon: FlaskConical, route: (base) => `${base}/lab`, space: true },
+   { label: "Chat", icon: MessagesSquare, route: (base) => `${base}/chat`, space: true },
+   { label: "Files", icon: spaceIcons.files, route: () => "/agents?view=files" },
+ ];
+@@ -49,6 +59,7 @@
+   Settings: 0.9,
+   Commands: 0.9,
+   Notebooks: 1,
++  "In notebooks": 0.8,
+   Messages: 0.8,
+   "Engine history": 0.7,
+   Apps: 0.7,
+@@ -76,7 +87,10 @@
+   const base = spaceId ? `/spaces/${encodeURIComponent(spaceId)}` : "";
+   const agents = usePersonalAgentsStore((state) => state.agents);
+   const conversations = useMistyStore((state) => state.conversations);
++  const projectChats = useProjectChats();
+   const lessons = useLessonStore((state) => state.lessons);
++  const tutorJobs = useTutorStore((state) => state.jobs);
++  const notebooks = useTutorStore((state) => state.notebooks);
+   const gallery = useSpaceGallery(spaceId, user?.id ?? "");
+   const commands = useCommands();
+   const uses = useSearchUses((state) => state.uses);
+@@ -92,6 +106,7 @@
+   const local = useMemo(() => {
+     const hits: SearchHit[] = [];
+     const typed = words.length > 0;
++    const tutorMade = tutorChatIds(tutorJobs, notebooks);
+ 
+     for (const page of pages) {
+       if (page.space && !base) continue;
+@@ -131,18 +146,23 @@
+ 
+     for (const chat of conversations) {
+       if (!chat.messages.length || chat.place) continue;
+-      if (lessons[chat.id]) continue;
++      if (lessons[chat.id] || tutorMade.has(chat.id)) continue;
+       const agent = agentOf(chat.agentId);
+       if (!agent) continue;
+       const title = chat.title || "New conversation";
+-      const go = () => openRoute(agentChatRoute(agent.id, chat.id));
++      const inCode = Boolean(projectChats?.[chat.id]);
++      const route = inCode ? "/agents?view=code" : agentChatRoute(agent.id, chat.id);
++      const go = () => {
++        if (inCode) openCodeChat(chat.id);
++        openRoute(route);
++      };
+       if (!typed) {
+         hits.push({
+           id: `chat:${chat.id}`,
+           kind: "chats",
+           group: "Chats",
+           title,
+-          detail: agent.name,
++          detail: inCode ? "Code" : agent.name,
+           icon: <AgentAvatar agent={agent} compact />,
+           updatedAt: chat.updatedAt,
+           match: 0,
+@@ -169,7 +189,7 @@
+         kind: "chats",
+         group: "Chats",
+         title,
+-        detail: agent.name,
++        detail: inCode ? "Code" : agent.name,
+         excerpt: inside ? excerpt(said, words) : undefined,
+         icon: <AgentAvatar agent={agent} compact />,
+         updatedAt: chat.updatedAt,
+@@ -216,6 +236,22 @@
+       });
+     }
+ 
++    for (const notebook of Object.values(notebooks)) {
++      const match = typed ? matchScore(notebook.title, words) : 0;
++      if (typed && !match) continue;
++      hits.push({
++        id: `notebook:${notebook.id}`,
++        kind: "learn",
++        group: "Notebooks",
++        title: notebook.title || "Untitled notebook",
++        detail: "Notebook",
++        icon: notebook.emoji ? <span aria-hidden>{notebook.emoji}</span> : icon(NotebookPen),
++        updatedAt: notebook.updatedAt,
++        match,
++        open: () => openRoute(notebookRoute(notebook)),
++      });
++    }
++
+     for (const item of gallery.items) {
+       const match = typed ? fieldScore(words, item.title, item.excerpt) : 0;
+       if (typed && !match) continue;
+@@ -257,7 +293,10 @@
+     base,
+     commands,
+     conversations,
++    projectChats,
+     lessons,
++    tutorJobs,
++    notebooks,
+     gallery.items,
+     agents,
+     agentOf,
+@@ -269,6 +308,7 @@
+     spaceId,
+     words,
+     asking,
++    notebooks,
+     agents,
+     openRoute,
+   });
+--- a/src/features/agents/tutor/cursor/tutorHandoff.ts
++++ b/src/features/agents/tutor/cursor/tutorHandoff.ts
+@@ -11,7 +11,9 @@
+ import { homeSpaceOf, ownSpaceOf } from "../../personal/agentHomeSpace";
+ import { usePersonalAgentsStore } from "../../personal/personalAgentsStore";
+ import { useLocalExecution } from "../../runs/local-execution/localExecutionState";
++import { useChatFolders } from "../../shared-folders/chatFolder";
+ import { useLessonStore } from "../lessons/lessonStore";
++import { tutorChatIds, useTutorStore } from "../tutorStore";
+ import type { DisplayCapture } from "./protocol";
+ 
+ export function handoffAgents(): AgentProfile[] {
+@@ -33,7 +35,10 @@
+ }
+ 
+ export function agentThreadId(agentId: string): string | undefined {
++  const projectChats = useChatFolders.getState().projectChats ?? {};
+   const lessons = useLessonStore.getState().lessons;
++  const { jobs, notebooks } = useTutorStore.getState();
++  const made = tutorChatIds(jobs, notebooks);
+   let thread: { id: string; updatedAt: string } | undefined;
+   for (const chat of useMistyStore.getState().conversations)
+     if (
+@@ -41,7 +46,9 @@
+       !chat.archivedAt &&
+       !chat.place &&
+       chat.messages.length > 0 &&
++      !projectChats[chat.id] &&
+       !lessons[chat.id] &&
++      !made.has(chat.id) &&
+       (!thread || chat.updatedAt > thread.updatedAt)
+     )
+       thread = chat;
