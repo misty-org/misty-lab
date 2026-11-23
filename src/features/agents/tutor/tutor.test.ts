@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dueCards, newReview, schedule } from "./spacedReview";
+import { dueCards, newReview, schedule } from "./spaced_review";
 import {
   askPrompt,
   chatStyleInstructions,
@@ -7,8 +7,8 @@ import {
   parseDeck,
   parseMarkdown,
   parseQuiz,
-} from "./tutorPrompts";
-import type { Notebook } from "./tutorTypes";
+} from "./tutor_prompts";
+import type { Notebook } from "./tutor_types";
 
 const start = new Date("2026-11-11T12:00:00Z");
 const day = 86_400_000;

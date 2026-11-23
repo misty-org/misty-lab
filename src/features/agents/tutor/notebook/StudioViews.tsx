@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight, Maximize2, Minus, Plus, Trash2 } from "lucide-react";
-import { confirmAction } from "@/shared/lib/confirmAction";
+import { confirmAction } from "@/shared/lib/confirm_action";
 import { Button, IconButton, Pressable, Separator, Surface, Text } from "@misty/ui";
 import { MistyMarkdown } from "../../runs/markdown/MistyMarkdown";
-import { slidesOf } from "../tutorStudio";
-import { useTutorStore } from "../tutorStore";
-import type { Guide, MindNode } from "../tutorTypes";
+import { slidesOf } from "../tutor_studio";
+import { useTutorStore } from "../tutor_store";
+import type { Guide, MindNode } from "../tutor_types";
 
 async function remove(guide: Guide, onClose: () => void) {
   if (!(await confirmAction(`Delete “${guide.title}”? This can’t be undone.`))) return;

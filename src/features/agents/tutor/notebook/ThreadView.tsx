@@ -11,11 +11,11 @@ import {
   Tooltip,
 } from "@misty/ui";
 import { MistyMarkdown } from "../../runs/markdown/MistyMarkdown";
-import { spacesGateway, type DocVisibility } from "../../spaces-gateway/spacesGateway";
-import type { Turn } from "../notebookThread";
-import { personTone } from "../personTone";
-import { useTutorStore } from "../tutorStore";
-import type { Notebook } from "../tutorTypes";
+import { spacesGateway, type DocVisibility } from "../../spaces-gateway/spaces_gateway";
+import type { Turn } from "../notebook_thread";
+import { personTone } from "../person_tone";
+import { useTutorStore } from "../tutor_store";
+import type { Notebook } from "../tutor_types";
 import { answerForNotes, citeLinks } from "./citations";
 import { PersonAvatar } from "./LivePeople";
 

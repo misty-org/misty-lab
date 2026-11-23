@@ -9,8 +9,8 @@ import {
   Text,
   Textarea,
 } from "@misty/ui";
-import { useTutorStore } from "../tutorStore";
-import type { Notebook, NotebookChatStyle } from "../tutorTypes";
+import { useTutorStore } from "../tutor_store";
+import type { Notebook, NotebookChatStyle } from "../tutor_types";
 
 const goals = [
   { value: "default", label: "Default" },

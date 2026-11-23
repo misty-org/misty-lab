@@ -11,10 +11,10 @@ import {
 } from "@misty/ui";
 import type { AgentProfile } from "@/shared/schemas";
 import { AgentAvatar } from "../../personal/AgentAvatar";
-import { spacesGateway } from "../../spaces-gateway/spacesGateway";
-import { agentLabel, paneOf, workWords, type NotebookAgent } from "../notebookAgents";
-import type { NotebookPane, Person } from "../notebookPresence";
-import type { Notebook } from "../tutorTypes";
+import { spacesGateway } from "../../spaces-gateway/spaces_gateway";
+import { agentLabel, paneOf, workWords, type NotebookAgent } from "../notebook_agents";
+import type { NotebookPane, Person } from "../notebook_presence";
+import type { Notebook } from "../tutor_types";
 
 const initials = (name: string) =>
   name

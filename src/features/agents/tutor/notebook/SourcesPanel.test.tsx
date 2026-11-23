@@ -1,11 +1,11 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { useTutorStore } from "../tutorStore";
-import type { Notebook, TutorJob } from "../tutorTypes";
+import { useTutorStore } from "../tutor_store";
+import type { Notebook, TutorJob } from "../tutor_types";
 import { SourcesPanel } from "./SourcesPanel";
 
 const runs = vi.hoisted(() => ({ retryJob: vi.fn(), dismissJob: vi.fn(), startJob: vi.fn() }));
-vi.mock("../tutorRuns", () => ({
+vi.mock("../tutor_runs", () => ({
   retryJob: (job: TutorJob) => (runs.retryJob(job), Promise.resolve(job)),
   dismissJob: (job: TutorJob) => (runs.dismissJob(job), Promise.resolve()),
   startJob: runs.startJob,

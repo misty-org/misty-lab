@@ -1,8 +1,8 @@
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { TutorActions } from "../TutorPage";
-import { useTutorStore } from "../tutorStore";
-import type { Deck, Guide, Notebook, TutorJob } from "../tutorTypes";
+import { useTutorStore } from "../tutor_store";
+import type { Deck, Guide, Notebook, TutorJob } from "../tutor_types";
 import { StudioPanel } from "./StudioPanel";
 
 const fakes = vi.hoisted(() => ({
@@ -12,29 +12,29 @@ const fakes = vi.hoisted(() => ({
   startLesson: vi.fn(),
 }));
 
-vi.mock("../tutorRuns", () => ({
+vi.mock("../tutor_runs", () => ({
   startJob: fakes.startJob,
   retryJob: fakes.retryJob,
   dismissJob: fakes.dismissJob,
 }));
-vi.mock("../notebookThread", () => ({ startLesson: fakes.startLesson }));
-vi.mock("../../conversations/state/useMistyStore", async () => {
+vi.mock("../notebook_thread", () => ({ startLesson: fakes.startLesson }));
+vi.mock("../../conversations/state/use_misty_store", async () => {
   const { create } = await import("zustand");
   return { useMistyStore: create(() => ({ conversations: [] })) };
 });
-vi.mock("../../conversations/state/localChats", () => ({
+vi.mock("../../conversations/state/local_chats", () => ({
   localChats: {
     saveTutor: () => Promise.resolve(),
     deleteTutor: () => Promise.resolve(),
     tutor: () => Promise.resolve([]),
   },
 }));
-vi.mock("../../page/useChatStatuses", () => ({
+vi.mock("../../page/use_chat_statuses", () => ({
   shortAgo: () => "now",
   agoWords: () => "just now",
 }));
 
-const { useMistyStore } = await import("../../conversations/state/useMistyStore");
+const { useMistyStore } = await import("../../conversations/state/use_misty_store");
 
 const notebook = {
   id: "n1",

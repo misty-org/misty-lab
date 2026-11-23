@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Check, Layers, ListChecks, RotateCcw, Trash2, X } from "lucide-react";
-import { confirmAction } from "@/shared/lib/confirmAction";
+import { confirmAction } from "@/shared/lib/confirm_action";
 import {
   Button,
   IconButton,
@@ -13,13 +13,13 @@ import {
   type TextTone,
 } from "@misty/ui";
 import { MistyMarkdown } from "../runs/markdown/MistyMarkdown";
-import { startLesson } from "./notebookThread";
-import { deckPrompt, jobTitle, quizPrompt, teachPrompt } from "./tutorPrompts";
-import { startJob } from "./tutorRuns";
-import { useTutorStore } from "./tutorStore";
-import type { Guide } from "./tutorTypes";
+import { startLesson } from "./notebook_thread";
+import { deckPrompt, jobTitle, quizPrompt, teachPrompt } from "./tutor_prompts";
+import { startJob } from "./tutor_runs";
+import { useTutorStore } from "./tutor_store";
+import type { Guide } from "./tutor_types";
 import type { TutorActions } from "./TutorPage";
-import { deleteOverviewAudio, makeOverviewAudio, overviewAudioUrl } from "./tutorAudio";
+import { deleteOverviewAudio, makeOverviewAudio, overviewAudioUrl } from "./tutor_audio";
 
 function fromGuide(guide: Guide, kind: "deck" | "quiz", agentId: string) {
   const context = `The study guide “${guide.title}”:\n\n${guide.body}`;

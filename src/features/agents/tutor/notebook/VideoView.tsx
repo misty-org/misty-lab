@@ -10,12 +10,12 @@ import {
   RotateCcw,
   Trash2,
 } from "lucide-react";
-import { confirmAction } from "@/shared/lib/confirmAction";
+import { confirmAction } from "@/shared/lib/confirm_action";
 import { Button, IconButton, Pressable, Surface, Text, useNotice } from "@misty/ui";
-import { deleteVideoAudio, makeVideoAudio, sceneAudioBytes } from "../tutorAudio";
-import { useTutorStore } from "../tutorStore";
-import type { Guide } from "../tutorTypes";
-import { recordVideo, saveBytes, sceneSeconds, svgUrl } from "./videoExport";
+import { deleteVideoAudio, makeVideoAudio, sceneAudioBytes } from "../tutor_audio";
+import { useTutorStore } from "../tutor_store";
+import type { Guide } from "../tutor_types";
+import { recordVideo, saveBytes, sceneSeconds, svgUrl } from "./video_export";
 
 function clock(seconds: number): string {
   const whole = Math.max(0, Math.round(seconds));

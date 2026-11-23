@@ -2,11 +2,11 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DeckView, ReviewSession } from "../TutorDecks";
 import { OverviewView, QuizView } from "../TutorGuides";
-import { useTutorStore } from "../tutorStore";
-import type { Deck, Guide } from "../tutorTypes";
+import { useTutorStore } from "../tutor_store";
+import type { Deck, Guide } from "../tutor_types";
 import { MindMapView, SlidesView } from "./StudioViews";
 import { InfographicView, VideoView } from "./VideoView";
-import type * as VideoExport from "./videoExport";
+import type * as VideoExport from "./video_export";
 
 const fakes = vi.hoisted(() => ({
   confirm: vi.fn(),
@@ -20,10 +20,10 @@ const fakes = vi.hoisted(() => ({
   saveBytes: vi.fn(),
 }));
 
-vi.mock("@/shared/lib/confirmAction", () => ({ confirmAction: fakes.confirm }));
-vi.mock("../tutorRuns", () => ({ startJob: vi.fn() }));
-vi.mock("../notebookThread", () => ({ startLesson: vi.fn() }));
-vi.mock("../tutorAudio", () => ({
+vi.mock("@/shared/lib/confirm_action", () => ({ confirmAction: fakes.confirm }));
+vi.mock("../tutor_runs", () => ({ startJob: vi.fn() }));
+vi.mock("../notebook_thread", () => ({ startLesson: vi.fn() }));
+vi.mock("../tutor_audio", () => ({
   makeOverviewAudio: fakes.makeOverviewAudio,
   overviewAudioUrl: fakes.overviewAudioUrl,
   deleteOverviewAudio: fakes.deleteOverviewAudio,
@@ -31,12 +31,12 @@ vi.mock("../tutorAudio", () => ({
   deleteVideoAudio: fakes.deleteVideoAudio,
   sceneAudioBytes: fakes.sceneAudioBytes,
 }));
-vi.mock("./videoExport", async (actual) => ({
+vi.mock("./video_export", async (actual) => ({
   ...(await actual<typeof VideoExport>()),
   recordVideo: fakes.recordVideo,
   saveBytes: fakes.saveBytes,
 }));
-vi.mock("../../conversations/state/localChats", () => ({
+vi.mock("../../conversations/state/local_chats", () => ({
   localChats: {
     available: () => false,
     saveTutor: () => Promise.resolve(),

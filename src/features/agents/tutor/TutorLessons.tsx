@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { useMistyStore } from "../conversations/state/useMistyStore";
-import { shortAgo } from "../page/useChatStatuses";
+import { useMistyStore } from "../conversations/state/use_misty_store";
+import { shortAgo } from "../page/use_chat_statuses";
 import { Meter, Pressable, OverflowFadeText, Surface, Text } from "@misty/ui";
-import { lessonProgress } from "./lessons/lessonRouter";
-import { useLessonStore } from "./lessons/lessonStore";
-import type { Course, Lesson } from "./lessons/lessonTypes";
-import { useNow } from "@/shared/hooks/useNow";
+import { lessonProgress } from "./lessons/lesson_router";
+import { useLessonStore } from "./lessons/lesson_store";
+import type { Course, Lesson } from "./lessons/lesson_types";
+import { useNow } from "@/shared/hooks/use_now";
 
 type Entry =
   | { kind: "course"; course: Course; lessons: Lesson[]; updatedAt: string }

@@ -1,6 +1,6 @@
 import { TourCorner } from "../../TourCorner";
 import { useState, type FormEvent } from "react";
-import { useFileDropZone } from "@/shared/hooks/useFileDropZone";
+import { useFileDropZone } from "@/shared/hooks/use_file_drop_zone";
 import { ArrowRight, Clipboard, Globe, Link2, Mic, Upload } from "lucide-react";
 import {
   Button,
@@ -16,8 +16,8 @@ import {
   Textarea,
 } from "@misty/ui";
 import { useSpeechSupport } from "@/features/voice";
-import { jobTitle } from "../tutorPrompts";
-import { startJob } from "../tutorRuns";
+import { jobTitle } from "../tutor_prompts";
+import { startJob } from "../tutor_runs";
 import {
   addDroppedFiles,
   addLink,
@@ -25,9 +25,9 @@ import {
   addRecordings,
   addText,
   sourceLimit,
-} from "../tutorSources";
-import { researchPrompt } from "../tutorStudio";
-import type { Notebook } from "../tutorTypes";
+} from "../tutor_sources";
+import { researchPrompt } from "../tutor_studio";
+import type { Notebook } from "../tutor_types";
 
 type Mode = "choose" | "links" | "text";
 

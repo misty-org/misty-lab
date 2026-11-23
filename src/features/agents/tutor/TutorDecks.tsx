@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
-import { confirmAction } from "@/shared/lib/confirmAction";
+import { confirmAction } from "@/shared/lib/confirm_action";
 import { Button, IconButton, Input, Separator, Surface, Text, Textarea } from "@misty/ui";
-import { dueCards, nextLabel, type Grade } from "./spacedReview";
-import { useTutorStore } from "./tutorStore";
-import type { Deck, Flashcard } from "./tutorTypes";
-import { useNow } from "@/shared/hooks/useNow";
+import { dueCards, nextLabel, type Grade } from "./spaced_review";
+import { useTutorStore } from "./tutor_store";
+import type { Deck, Flashcard } from "./tutor_types";
+import { useNow } from "@/shared/hooks/use_now";
 
 export function DeckView({
   deck,

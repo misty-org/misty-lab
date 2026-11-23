@@ -1,6 +1,6 @@
 import { FileText, Globe, Mic, NotebookText, Type, type LucideIcon } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
-import { useNow } from "@/shared/hooks/useNow";
+import { useNow } from "@/shared/hooks/use_now";
 import {
   ItemCard,
   OverflowFadeText,
@@ -11,16 +11,16 @@ import {
   Tooltip,
   cn,
 } from "@misty/ui";
-import { agoWords } from "../page/useChatStatuses";
-import { spacesGateway } from "../spaces-gateway/spacesGateway";
-import { useTeamMembers } from "../now/teamMembers";
-import { usePersonalAgentsStore } from "../personal/personalAgentsStore";
-import { agentsAtWork, workWords } from "./notebookAgents";
-import { hold, release, useOthersMaking } from "./notebookLive";
+import { agoWords } from "../page/use_chat_statuses";
+import { spacesGateway } from "../spaces-gateway/spaces_gateway";
+import { useTeamMembers } from "../now/team_members";
+import { usePersonalAgentsStore } from "../personal/personal_agents_store";
+import { agentsAtWork, workWords } from "./notebook_agents";
+import { hold, release, useOthersMaking } from "./notebook_live";
 import { PersonAvatar } from "./notebook/LivePeople";
-import { personTone } from "./personTone";
-import { useTutorStore } from "./tutorStore";
-import type { Guide, Notebook, NotebookSource, TutorJob } from "./tutorTypes";
+import { personTone } from "./person_tone";
+import { useTutorStore } from "./tutor_store";
+import type { Guide, Notebook, NotebookSource, TutorJob } from "./tutor_types";
 
 const nouns: Record<Guide["kind"] | TutorJob["kind"], string> = {
   guide: "report",

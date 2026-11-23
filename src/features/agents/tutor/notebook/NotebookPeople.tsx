@@ -1,17 +1,17 @@
 import { MessagesSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useNow } from "@/shared/hooks/useNow";
+import { useNow } from "@/shared/hooks/use_now";
 import { Button, OverflowFadeText, Text } from "@misty/ui";
-import { agoWords } from "../../page/useChatStatuses";
-import { spacesGateway } from "../../spaces-gateway/spacesGateway";
-import { NOTEBOOK_DOC_PREFIX } from "../notebookMarkdown";
-import { liveNotebook } from "../notebookLive";
-import { takeLease } from "../notebookDoc";
-import type { NotebookAgent } from "../notebookAgents";
-import type { Person } from "../notebookPresence";
-import { useTutorStore } from "../tutorStore";
-import type { Notebook } from "../tutorTypes";
+import { agoWords } from "../../page/use_chat_statuses";
+import { spacesGateway } from "../../spaces-gateway/spaces_gateway";
+import { NOTEBOOK_DOC_PREFIX } from "../notebook_markdown";
+import { liveNotebook } from "../notebook_live";
+import { takeLease } from "../notebook_doc";
+import type { NotebookAgent } from "../notebook_agents";
+import type { Person } from "../notebook_presence";
+import { useTutorStore } from "../tutor_store";
+import type { Notebook } from "../tutor_types";
 import { FacePile } from "./LivePeople";
 
 interface Done {

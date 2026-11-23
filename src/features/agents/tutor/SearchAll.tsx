@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { FileText, StickyNote } from "lucide-react";
 import { Pressable, SearchField, Skeleton, OverflowFadeText, Surface, Text } from "@misty/ui";
 import type { TutorActions } from "./TutorPage";
-import { searchNotebooks, type SearchHit } from "./tutorSearch";
-import { useTutorStore } from "./tutorStore";
+import { searchNotebooks, type SearchHit } from "./tutor_search";
+import { useTutorStore } from "./tutor_store";
 
 export interface NotebookSearch {
   query: string;

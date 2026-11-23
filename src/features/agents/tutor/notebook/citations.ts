@@ -1,4 +1,4 @@
-import type { NotebookSource } from "../tutorTypes";
+import type { NotebookSource } from "../tutor_types";
 
 export function answerForNotes(
   answer: string,

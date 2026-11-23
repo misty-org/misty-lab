@@ -20,9 +20,9 @@ import {
   Surface,
   Text,
 } from "@misty/ui";
-import { lookForNews, setFollow } from "../notebookFollow";
-import { useTutorStore } from "../tutorStore";
-import type { Notebook } from "../tutorTypes";
+import { lookForNews, setFollow } from "../notebook_follow";
+import { useTutorStore } from "../tutor_store";
+import type { Notebook } from "../tutor_types";
 
 export function NotebookBar({
   notebook,

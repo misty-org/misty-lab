@@ -10,7 +10,7 @@ import {
   spaceHomeClass,
   Surface,
 } from "@misty/ui";
-import { defaultEngineAgent, useDefaultEngine } from "../engines/defaultEngine";
+import { defaultEngineAgent, useDefaultEngine } from "../engines/default_engine";
 import { NotebookCardsSkeleton } from "./TutorHome";
 import { TutorPage } from "./TutorPage";
 

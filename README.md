@@ -14,7 +14,7 @@ plug back in. Tutor, the cursor companion, and lessons in a chat stay in Misty.
 
 | Folder | What it is |
 | --- | --- |
-| `src/features/agents/tutor/` | The Lab page (`SpaceLab.tsx`, `TutorPage.tsx`, `TutorHome.tsx`), topics, guides, decks and lessons lists, notebook search, the runs that make study tools (`tutorRuns.ts`, `tutorStudio.ts`, `tutorPrompts.ts`, `tutorAudio.ts`), its store, sources, spaced review and notebooks' live presence |
+| `src/features/agents/tutor/` | The Lab page (`SpaceLab.tsx`, `TutorPage.tsx`, `TutorHome.tsx`), topics, guides, decks and lessons lists, notebook search, the runs that make study tools (`tutor_runs.ts`, `tutor_studio.ts`, `tutor_prompts.ts`, `tutor_audio.ts`), its store, sources, spaced review and notebooks' live presence |
 | `src/features/agents/tutor/notebook/` | A notebook: sources, reader, chat, studio panel and views, video export, people in it |
 | `integration/misty.patch` | The changes in Misty that took the Lab out, reversed |
 

@@ -8,8 +8,8 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import { confirmAction } from "@/shared/lib/confirmAction";
-import { createDeviceSetting } from "@/shared/lib/deviceSetting";
+import { confirmAction } from "@/shared/lib/confirm_action";
+import { createDeviceSetting } from "@/shared/lib/device_setting";
 import {
   Button,
   CollectionHeading,
@@ -36,17 +36,17 @@ import {
   Tooltip,
   useNotice,
 } from "@misty/ui";
-import { spacesGateway } from "../spaces-gateway/spacesGateway";
-import { useStudioOpen, useTeamMembers, type TeamMember } from "../now/teamMembers";
+import { spacesGateway } from "../spaces-gateway/spaces_gateway";
+import { useStudioOpen, useTeamMembers, type TeamMember } from "../now/team_members";
 import { PersonAvatar } from "./notebook/LivePeople";
 import { NotebookCard, NotebookRow } from "./NotebookCard";
-import { deleteNotebook } from "./notebookSpace";
-import { personTone } from "./personTone";
+import { deleteNotebook } from "./notebook_space";
+import { personTone } from "./person_tone";
 import { NotebookSearchResults, SearchAll, useNotebookSearch } from "./SearchAll";
 import { TopicStart } from "./TopicStart";
 import type { TutorActions } from "./TutorPage";
-import { useTutorStore } from "./tutorStore";
-import type { Notebook } from "./tutorTypes";
+import { useTutorStore } from "./tutor_store";
+import type { Notebook } from "./tutor_types";
 
 const sorts: readonly { value: "recent" | "title" | "created"; label: string; icon: LucideIcon }[] =
   [

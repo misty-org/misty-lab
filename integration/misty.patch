@@ -28,8 +28,8 @@
    if (!unread.length) return null;
    return (
      <Button
---- a/src/features/agents/activity/useSpaceRuns.ts
-+++ b/src/features/agents/activity/useSpaceRuns.ts
+--- a/src/features/agents/activity/use_space_runs.ts
++++ b/src/features/agents/activity/use_space_runs.ts
 @@ -2,12 +2,20 @@
  import { conversationInSpace } from "../conversations/state/conversationSpace";
  import type { GlobalAiConversation } from "../conversations/state/conversationTypes";
@@ -67,8 +67,8 @@
    const on = useCompanionOn();
    useEffect(() => {
      if (on !== true || !companionAvailable()) return;
---- a/src/app/layouts/DesktopLayout/search/useRemoteHits.tsx
-+++ b/src/app/layouts/DesktopLayout/search/useRemoteHits.tsx
+--- a/src/app/layouts/DesktopLayout/search/UseRemoteHits.tsx
++++ b/src/app/layouts/DesktopLayout/search/UseRemoteHits.tsx
 @@ -1,4 +1,4 @@
 -import { FileCode, History, Plug } from "lucide-react";
 +import { FileCode, FileText, History, Plug } from "lucide-react";
@@ -138,8 +138,8 @@
      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [remoteKey, openRoute]);
  
---- a/src/app/layouts/DesktopLayout/search/searchTypes.ts
-+++ b/src/app/layouts/DesktopLayout/search/searchTypes.ts
+--- a/src/app/layouts/DesktopLayout/search/search_types.ts
++++ b/src/app/layouts/DesktopLayout/search/search_types.ts
 @@ -8,7 +8,7 @@
    { id: "all", label: "All", placeholder: "Search" },
    { id: "chats", label: "Chats", placeholder: "Search chats" },
@@ -190,8 +190,8 @@
          ) : section === "explore" ? (
            <Explore
              spaceId={spaceId}
---- a/src/features/spaces/routes/spaceRoute.ts
-+++ b/src/features/spaces/routes/spaceRoute.ts
+--- a/src/features/spaces/routes/space_route.ts
++++ b/src/features/spaces/routes/space_route.ts
 @@ -5,6 +5,7 @@
    "home",
    "social",
@@ -247,8 +247,8 @@
      default:
        return <PaneLoading label="Loading page" />;
    }
---- a/src/features/app-windows/tabs/routeSurface.ts
-+++ b/src/features/app-windows/tabs/routeSurface.ts
+--- a/src/features/app-windows/tabs/route_surface.ts
++++ b/src/features/app-windows/tabs/route_surface.ts
 @@ -80,12 +80,13 @@
    return null;
  }
@@ -392,8 +392,8 @@
              {page === "files" ? <FilesPageSlot /> : null}
              {page === "memory" ? (
                <AgentMemoryPage
---- a/src/features/agents/page/useAgentsPageState.ts
-+++ b/src/features/agents/page/useAgentsPageState.ts
+--- a/src/features/agents/page/use_agents_page_state.ts
++++ b/src/features/agents/page/use_agents_page_state.ts
 @@ -215,12 +215,15 @@
  export type AgentsPageState = ReturnType<typeof useAgentsPageState>;
  
@@ -478,8 +478,8 @@
  export { loadRunEntry } from "./tools/runContexts";
  
  export {
---- a/src/app/layouts/DesktopLayout/sidebarPinsStore.ts
-+++ b/src/app/layouts/DesktopLayout/sidebarPinsStore.ts
+--- a/src/app/layouts/DesktopLayout/sidebar_pins_store.ts
++++ b/src/app/layouts/DesktopLayout/sidebar_pins_store.ts
 @@ -2,7 +2,7 @@
  import { readDeviceState, updateDeviceState } from "@/features/agents";
  import { announceDeviceSetting, onDeviceSettingChange } from "@/shared/lib/deviceSetting";
@@ -579,8 +579,8 @@
          open: () => open(placeRoutes[id]),
        } satisfies SidebarPlace,
      ]),
---- a/src/app/layouts/DesktopLayout/search/useSearchHits.tsx
-+++ b/src/app/layouts/DesktopLayout/search/useSearchHits.tsx
+--- a/src/app/layouts/DesktopLayout/search/UseSearchHits.tsx
++++ b/src/app/layouts/DesktopLayout/search/UseSearchHits.tsx
 @@ -1,7 +1,10 @@
  import {
    Armchair,
@@ -722,8 +722,8 @@
      agents,
      openRoute,
    });
---- a/src/features/agents/tutor/cursor/tutorHandoff.ts
-+++ b/src/features/agents/tutor/cursor/tutorHandoff.ts
+--- a/src/features/agents/tutor/cursor/tutor_handoff.ts
++++ b/src/features/agents/tutor/cursor/tutor_handoff.ts
 @@ -11,7 +11,9 @@
  import { homeSpaceOf, ownSpaceOf } from "../../personal/agentHomeSpace";
  import { usePersonalAgentsStore } from "../../personal/personalAgentsStore";

@@ -1,8 +1,8 @@
 import { useEffect, type ReactNode } from "react";
-import { useNow } from "@/shared/hooks/useNow";
+import { useNow } from "@/shared/hooks/use_now";
 import { activityWords, lastActivity } from "./notebook/NotebookPeople";
-import { hold, release, useOthersMaking } from "./notebookLive";
-import { useTutorStore } from "./tutorStore";
+import { hold, release, useOthersMaking } from "./notebook_live";
+import { useTutorStore } from "./tutor_store";
 
 const nouns: Record<string, string> = {
   guide: "a report",

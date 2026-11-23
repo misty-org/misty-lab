@@ -7,13 +7,13 @@ import {
   jobTitle,
   summaryPrompt,
   transformationPrompt,
-} from "../tutorPrompts";
-import { startJob } from "../tutorRuns";
-import { readLink } from "../tutorSources";
-import { useTutorStore } from "../tutorStore";
-import type { Notebook, NotebookNote, NotebookSource, SourceContext } from "../tutorTypes";
+} from "../tutor_prompts";
+import { startJob } from "../tutor_runs";
+import { readLink } from "../tutor_sources";
+import { useTutorStore } from "../tutor_store";
+import type { Notebook, NotebookNote, NotebookSource, SourceContext } from "../tutor_types";
 import { middleScrollClass, paneClass } from "./panes";
-import type { Person } from "../notebookPresence";
+import type { Person } from "../notebook_presence";
 import { LiveNoteBody } from "./LiveNoteBody";
 import { RowFaces } from "./LivePeople";
 

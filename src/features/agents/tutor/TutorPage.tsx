@@ -1,17 +1,17 @@
 import { useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { StudioPage, StudioPageScroll } from "../methods/StudioPage";
-import { useAgentAccountId } from "../personal/agentAccount";
-import { homeSpaceOf } from "../personal/agentHomeSpace";
-import { listSpaceNotebooks, useNotebooksInSpace } from "./notebookSpace";
-import { useLessonStore } from "./lessons/lessonStore";
+import { useAgentAccountId } from "../personal/agent_account";
+import { homeSpaceOf } from "../personal/agent_home_space";
+import { listSpaceNotebooks, useNotebooksInSpace } from "./notebook_space";
+import { useLessonStore } from "./lessons/lesson_store";
 import { NotebookWorkspace } from "./notebook/NotebookWorkspace";
 import { DeckView, ReviewSession } from "./TutorDecks";
 import { GuideView, OverviewView, QuizView } from "./TutorGuides";
 import { MindMapView, SlidesView } from "./notebook/StudioViews";
 import { InfographicView, VideoView } from "./notebook/VideoView";
 import { TutorHome } from "./TutorHome";
-import { useTutorStore } from "./tutorStore";
+import { useTutorStore } from "./tutor_store";
 
 export interface TutorActions {
   agentId: string;

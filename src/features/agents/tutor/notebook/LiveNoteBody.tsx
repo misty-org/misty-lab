@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import * as Y from "yjs";
 import { SetupState } from "@misty/ui";
-import { spacesGateway } from "../../spaces-gateway/spacesGateway";
-import { noteMap, noteSeed, setNoteMarkdown, takeLease } from "../notebookDoc";
-import { liveNotebookError, retryLiveNotebook, useLiveNotebook } from "../notebookLive";
-import { setPresence } from "../notebookPresence";
-import { personColor } from "../personTone";
-import type { NotebookNote } from "../tutorTypes";
+import { spacesGateway } from "../../spaces-gateway/spaces_gateway";
+import { noteMap, noteSeed, setNoteMarkdown, takeLease } from "../notebook_doc";
+import { liveNotebookError, retryLiveNotebook, useLiveNotebook } from "../notebook_live";
+import { setPresence } from "../notebook_presence";
+import { personColor } from "../person_tone";
+import type { NotebookNote } from "../tutor_types";
 
 export function LiveNoteBody({ notebookId, note }: { notebookId: string; note: NotebookNote }) {
   const entry = useLiveNotebook(notebookId);

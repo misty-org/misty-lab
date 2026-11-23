@@ -25,15 +25,15 @@ import {
   Surface,
   Text,
 } from "@misty/ui";
-import { jobTitle } from "../tutorPrompts";
-import { dismissJob, retryJob, startJob, unusableReply } from "../tutorRuns";
-import { researchPrompt } from "../tutorStudio";
-import { useTutorStore } from "../tutorStore";
-import type { Notebook, NotebookSource, TutorJob } from "../tutorTypes";
+import { jobTitle } from "../tutor_prompts";
+import { dismissJob, retryJob, startJob, unusableReply } from "../tutor_runs";
+import { researchPrompt } from "../tutor_studio";
+import { useTutorStore } from "../tutor_store";
+import type { Notebook, NotebookSource, TutorJob } from "../tutor_types";
 import { paneClass, paneHeadClass, paneScrollClass, railClass } from "./panes";
-import type { NotebookAgent } from "../notebookAgents";
-import type { Person } from "../notebookPresence";
-import { useArrived } from "./useArrived";
+import type { NotebookAgent } from "../notebook_agents";
+import type { Person } from "../notebook_presence";
+import { useArrived } from "./use_arrived";
 import { PaneFaces, RowFaces } from "./LivePeople";
 
 export type Opened = { kind: "source" | "note"; id: string };

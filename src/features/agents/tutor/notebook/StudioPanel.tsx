@@ -26,7 +26,7 @@ import {
   Text,
   type Tint,
 } from "@misty/ui";
-import { agoWords } from "../../page/useChatStatuses";
+import { agoWords } from "../../page/use_chat_statuses";
 import { DeckView, ReviewSession } from "../TutorDecks";
 import { GuideView, OverviewView, QuizView } from "../TutorGuides";
 import type { TutorActions } from "../TutorPage";
@@ -37,9 +37,9 @@ import {
   overviewPrompt,
   quizPrompt,
   teachPrompt,
-} from "../tutorPrompts";
-import { startLesson } from "../notebookThread";
-import { dismissJob, retryJob, startJob } from "../tutorRuns";
+} from "../tutor_prompts";
+import { startLesson } from "../notebook_thread";
+import { dismissJob, retryJob, startJob } from "../tutor_runs";
 import {
   infographicPrompt,
   mindmapPrompt,
@@ -47,18 +47,18 @@ import {
   reports,
   slidesPrompt,
   videoPrompt,
-} from "../tutorStudio";
-import { useTutorStore } from "../tutorStore";
-import type { Deck, Guide, Notebook, TutorJob, TutorJobKind } from "../tutorTypes";
+} from "../tutor_studio";
+import { useTutorStore } from "../tutor_store";
+import type { Deck, Guide, Notebook, TutorJob, TutorJobKind } from "../tutor_types";
 import { paneClass, paneHeadClass, paneScrollClass, railClass } from "./panes";
-import { spacesGateway } from "../../spaces-gateway/spacesGateway";
-import { useOthersMaking } from "../notebookLive";
-import type { NotebookAgent } from "../notebookAgents";
-import type { Person } from "../notebookPresence";
+import { spacesGateway } from "../../spaces-gateway/spaces_gateway";
+import { useOthersMaking } from "../notebook_live";
+import type { NotebookAgent } from "../notebook_agents";
+import type { Person } from "../notebook_presence";
 import { PaneFaces, RowFaces } from "./LivePeople";
 import { MindMapView, SlidesView } from "./StudioViews";
 import { InfographicView, VideoView } from "./VideoView";
-import { useNow } from "@/shared/hooks/useNow";
+import { useNow } from "@/shared/hooks/use_now";
 
 type Tile = {
   id: string;

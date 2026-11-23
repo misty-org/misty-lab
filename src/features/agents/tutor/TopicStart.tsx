@@ -9,11 +9,11 @@ import {
   Surface,
   Text,
 } from "@misty/ui";
-import { notebookTopics, startOf, topicOf } from "./notebookTopics";
-import { jobTitle } from "./tutorPrompts";
-import { startJob } from "./tutorRuns";
-import { researchPrompt } from "./tutorStudio";
-import { useTutorStore } from "./tutorStore";
+import { notebookTopics, startOf, topicOf } from "./notebook_topics";
+import { jobTitle } from "./tutor_prompts";
+import { startJob } from "./tutor_runs";
+import { researchPrompt } from "./tutor_studio";
+import { useTutorStore } from "./tutor_store";
 import type { TutorActions } from "./TutorPage";
 
 export function TopicStart({

@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AgentProfile } from "@/shared/schemas";
-import { useAgentAccountId } from "../personal/agentAccount";
-import { homeSpaceOf } from "../personal/agentHomeSpace";
-import { useMistyStore } from "../conversations/state/useMistyStore";
+import { useAgentAccountId } from "../personal/agent_account";
+import { homeSpaceOf } from "../personal/agent_home_space";
+import { useMistyStore } from "../conversations/state/use_misty_store";
 
 export function LabInSpace({ agent }: { agent: AgentProfile }) {
   const navigate = useNavigate();
