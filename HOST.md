@@ -10,17 +10,21 @@ The files keep Misty's paths, so their imports resolve once they are back in pla
 - **Tutor and lessons**, which stayed: `tutor/cursor/*` and `tutor/lessons/*`.
 - **Runs:** `conversations/start_run.ts` (moved there out of `tutor_runs.ts`, which re-exports it), `conversations/state/*`, `engines/default_engine`, `engines/engine_run`,
   `runs/invocations/*`, `plans/store`.
-- **Spaces:** `spaces-gateway/spaces_gateway` (live docs, member pictures, places), `personal/*`, `now/*`.
+- **Spaces:** `spaces-gateway/spaces_gateway` (the note editor, member pictures, places, `pageMisty`),
+  `personal/*`, `now/*`.
 - **Shared:** `@misty/ui`, `shared/lib/person_tone`, `features/settings`, `features/onboarding` tours.
 
 ## 2. What Misty kept on purpose
 
-- **The Lab's host.** `features/spaces/apps/page_misty.ts` still builds the `lab` page's misty-sdk client and its
-  rooms (`labRoomSource`, on Space notes' live collaboration), and `features/spaces/handoffs/live_gateway.ts`
-  still opens a notebook's live doc through it.
+- **The Lab's host.** `features/spaces/apps/page_misty.ts` still builds the `lab` page's misty-sdk client, with no
+  rooms of its own: Space notes' live collaboration and the gateway's notebook live doc (`openLiveDoc`,
+  `followRewrites`) are gone. Plugged back in, the page opens a notebook's room with misty-sdk's `room(key,
+  options)` like any app (`pageMisty(spaceId, "lab").room(docId)`), so `notebook_live.ts`, `notebook_thread.ts`
+  and `LiveNoteBody.tsx` move onto it. The room no longer writes into the note, so the Lab saves a notebook's
+  Markdown itself (`spacesGateway.saveDoc`).
 - **Presence.** The `"lab"` place (`features/spaces/list/realtime_types.ts`, `spacesGateway`'s `PersonPlace`,
   `now/team_members.ts`, `ChatMemberList`'s "In the Lab") and misty-server's presence rooms.
-- **Notebooks themselves** are Space notes on the server, so nothing a Space made is lost.
+- **Notebooks themselves** are still stored as Space notes on the server; only their live rooms went.
 - **Search's `learn` kind**, now called Lessons.
 
 ## 3. Where Misty mounted it
