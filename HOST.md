@@ -19,7 +19,8 @@ The files keep Misty's paths, so their imports resolve once they are back in pla
 - **The Lab's host.** `features/spaces/apps/page_misty.ts` still builds the `lab` page's misty-sdk client, with no
   rooms of its own: Space notes' live collaboration and the gateway's notebook live doc (`openLiveDoc`,
   `followRewrites`) are gone. Plugged back in, the page opens a notebook's room with misty-sdk's `room(key,
-  options)` like any app (`pageMisty(spaceId, "lab").room(docId)`), so `notebook_live.ts`, `notebook_thread.ts`
+  options)` like any app (`(await pageMisty(spaceId, "lab")).room(docId)`; `pageMisty` loads misty-sdk only
+  when first asked), so `notebook_live.ts`, `notebook_thread.ts`
   and `LiveNoteBody.tsx` move onto it. The room no longer writes into the note, so the Lab saves a notebook's
   Markdown itself (`spacesGateway.saveDoc`).
 - **Presence.** The `"lab"` place (`features/spaces/list/realtime_types.ts`, `spacesGateway`'s `PersonPlace`,
